@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  body { @apply bg-white text-ink font-sans antialiased; }
+  h1, h2, h3 { @apply font-display tracking-tightest; }
+  ::selection { @apply bg-gold-300; }
+}
+
+@layer components {
+  .container-x { @apply mx-auto w-full max-w-[1280px] px-5 sm:px-10; }
+  .section { @apply py-16 sm:py-24; }
+
+  .btn { @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition focus:outline-none focus-visible:ring-4 focus-visible:ring-gold-200 disabled:opacity-50; }
+  /* Primary = logo yellow with dark text (like the reference sites' bright pill CTA) */
+  .btn-primary { @apply btn bg-gold-300 font-bold text-ink hover:bg-gold-400; }
+  .btn-dark { @apply btn bg-gold-950 text-white hover:bg-gold-800; }
+  .btn-outline { @apply btn border border-gold-950/15 bg-white text-ink hover:border-gold-500; }
+  .btn-ghost { @apply btn px-2 text-ink hover:text-gold-700; }
+
+  .card { @apply rounded-2xl border border-gold-950/[0.06] bg-white shadow-card; }
+  .chip { @apply inline-flex items-center gap-1.5 rounded-full bg-gold-100 px-3 py-1 text-xs font-semibold text-gold-800; }
+  .tag { @apply inline-flex items-center rounded-full bg-gold-950/[0.05] px-2.5 py-0.5 text-[11px] font-medium text-ink-soft; }
+
+  .input { @apply w-full rounded-xl border border-gold-950/15 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-ink-mute focus:border-gold-500 focus:ring-4 focus:ring-gold-100; }
+  .label { @apply mb-1.5 block text-sm font-medium text-ink; }
+
+  .glow { @apply pointer-events-none absolute rounded-full bg-gold-300/25 blur-3xl; }
+  .h-section { @apply font-display text-4xl font-extrabold leading-[1.04] tracking-tightest sm:text-[52px]; }
+}
