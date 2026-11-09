@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Icon from '../components/Icon'
 import { Initials, Photo } from '../components/ui'
@@ -59,6 +59,85 @@ function StagePicker() {
   )
 }
 
+/* Hero slideshow: upcoming events first (soonest first), then the most recent past ones.
+   The next slide sits tilted behind the current one, so visitors see what's coming up. */
+const SLIDE_MS = 5000
+
+function heroSlides() {
+  const hasImg = (e) => e.image
+  return [...getUpcoming().filter(hasImg), ...getPast().filter(hasImg)].slice(0, 6)
+}
+
+function SlideImage({ e, eager = false }) {
+  if (e.heroFit === 'contain') {
+    return (
+      <div className="relative h-full w-full overflow-hidden bg-gold-900">
+        <Photo src={e.image} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-2xl" />
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-gold-800/50 via-gold-900/20 to-gold-950/60" />
+        <Photo src={e.image} alt={e.title} className="relative h-full w-full object-contain p-5 pb-24" loading={eager ? 'eager' : 'lazy'} />
+      </div>
+    )
+  }
+  return <Photo src={e.image} alt={e.title} className="h-full w-full object-cover" style={{ objectPosition: e.heroPos || 'center' }} loading={eager ? 'eager' : 'lazy'} />
+}
+
+function HeroSlideshow() {
+  const slides = heroSlides()
+  const n = slides.length
+  const [i, setI] = useState(0)
+  const [paused, setPaused] = useState(false)
+
+  useEffect(() => {
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    if (paused || reduce || n < 2) return
+    const t = setTimeout(() => setI((x) => (x + 1) % n), SLIDE_MS)
+    return () => clearTimeout(t)
+  }, [i, paused, n])
+
+  if (!n) return null
+  const cur = slides[i]
+  const next = slides[(i + 1) % n]
+  const upcoming = getUpcoming().includes(cur)
+  const label = isToday(cur) ? 'Happening today' : upcoming ? 'Up next' : 'Latest'
+
+  return (
+    <div className="absolute inset-0" aria-roledescription="carousel" aria-label="GLBCRI events" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} onFocus={() => setPaused(true)} onBlur={() => setPaused(false)}>
+      {/* next slide, tilted behind */}
+      <div aria-hidden="true" className="absolute -right-3 bottom-14 top-10 hidden w-4/5 rotate-3 overflow-hidden rounded-[28px] shadow-lift sm:block">
+        <SlideImage key={next.slug} e={next} />
+      </div>
+
+      {/* current slide (cross-fades) */}
+      <div className="absolute bottom-8 left-0 right-0 top-4 overflow-hidden rounded-[28px] bg-gold-200 shadow-[0_30px_60px_-30px_rgba(81,53,41,.55)] sm:right-6">
+        {slides.map((e, k) => (
+          <div key={e.slug} aria-hidden={k !== i} className={`absolute inset-0 transition-opacity duration-700 ${k === i ? 'opacity-100' : 'opacity-0'}`}>
+            <SlideImage e={e} eager={k === 0} />
+          </div>
+        ))}
+        {n > 1 && (
+          <div className="absolute bottom-16 right-4 flex items-center gap-1.5 rounded-full bg-black/40 px-2.5 py-2 backdrop-blur sm:bottom-auto sm:left-4 sm:right-auto sm:top-4">
+            {slides.map((e, k) => (
+              <button key={e.slug} type="button" onClick={() => setI(k)} aria-label={`Show ${e.title}`} aria-current={k === i} className={`h-2 rounded-full transition-all ${k === i ? 'w-6 bg-gold-300' : 'w-2 bg-white/70 hover:bg-white'}`} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* front card: the event on screen right now */}
+      <Link to={`/events/${cur.slug}`} className="absolute bottom-0 left-3 flex max-w-[360px] items-center gap-3.5 rounded-[18px] bg-white px-4 py-3.5 shadow-lift sm:left-6">
+        <span className={`grid h-[52px] w-[52px] shrink-0 place-items-center rounded-[14px] ${upcoming ? 'bg-gold-300 text-gold-900' : 'bg-gold-800 text-gold-300'}`}>
+          <Icon name={cur.type === 'Recognition' ? 'trophy' : 'calendar'} className="h-[26px] w-[26px]" strokeWidth={1.9} />
+        </span>
+        <span className="flex min-w-0 flex-col">
+          <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-gold-600">{label} · {formatDate(cur.date)}</span>
+          <strong className="text-[15px]">{cur.title}</strong>
+          <span className="truncate text-xs text-ink-soft">{cur.venue}</span>
+        </span>
+      </Link>
+    </div>
+  )
+}
+
 function Hero() {
   return (
     <section className="container-x">
@@ -85,43 +164,62 @@ function Hero() {
         </div>
 
         <div className="relative min-h-[460px] flex-1 sm:min-h-[600px]">
-          <div aria-hidden="true" className="absolute -right-3 bottom-14 top-10 hidden w-4/5 rotate-3 overflow-hidden rounded-[28px] shadow-lift sm:block">
-            <Photo src={IMG + 'hero-hackathon.jpg'} alt="" className="h-full w-full object-cover object-[28%_center]" />
-          </div>
-          <div className="absolute bottom-8 left-0 right-0 top-4 overflow-hidden rounded-[28px] bg-gold-200 shadow-[0_30px_60px_-30px_rgba(81,53,41,.55)] sm:right-6">
-            <Photo src={IMG + 'hero-aktu-award.jpg'} alt="The GLBCRI team receiving the AKTU Leader Incubator Award 2026 at UP Startup Samvad, Lucknow" className="h-full w-full object-cover object-[52%_center]" loading="eager" />
-          </div>
-          <div className="absolute right-0 top-0 flex items-center gap-3 rounded-[18px] bg-white px-4 py-3.5 shadow-lift">
+          <HeroSlideshow />
+          <div className="absolute right-0 top-0 z-10 flex items-center gap-3 rounded-[18px] bg-white px-4 py-3.5 shadow-lift">
             <span className="grid h-11 w-11 place-items-center rounded-xl bg-gold-300 text-gold-800"><Icon name="rupee" className="h-[22px] w-[22px]" strokeWidth={2} /></span>
             <span className="flex flex-col">
               <strong className="font-display text-[22px] font-extrabold">Up to ₹10 L</strong>
               <span className="text-xs text-ink-soft">Prototype grant · DST NIDHI PRAYAS</span>
             </span>
           </div>
-          <Link to="/events/aktu-leader-incubator-award-2026" className="absolute bottom-0 left-3 flex max-w-[360px] items-center gap-3.5 rounded-[18px] bg-white px-4 py-3.5 shadow-lift sm:left-6">
-            <span className="grid h-[52px] w-[52px] shrink-0 place-items-center rounded-[14px] bg-gold-800 text-gold-300"><Icon name="trophy" className="h-[26px] w-[26px]" strokeWidth={1.9} /></span>
-            <span className="flex flex-col">
-              <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-gold-600">Winner · 10 Sep 2026</span>
-              <strong className="text-[15px]">AKTU Leader Incubator Award 2026</strong>
-              <span className="text-xs text-ink-soft">UP Startup Samvad, Lucknow</span>
-            </span>
-          </Link>
           <div className="absolute bottom-[76px] right-10 hidden flex-col rounded-2xl bg-gold-800 px-[18px] py-3.5 text-white shadow-lift sm:flex">
             <strong className="font-display text-[30px] font-extrabold leading-none text-gold-300">{portfolio.length}</strong>
             <span className="text-xs text-[#f1e3d6]">startups incubated</span>
           </div>
         </div>
       </div>
-
-      <div className="flex flex-col gap-5 border-t border-[#eee5dc] py-6 lg:flex-row lg:items-center lg:gap-7">
-        <span className="shrink-0 text-[13px] font-medium text-ink-soft">Recognised &amp; supported by</span>
-        <div className="flex flex-1 flex-wrap items-center justify-between gap-x-6 gap-y-3">
-          {recognitionLogos.filter((l) => l.hero).map((l) => (
-            <Photo key={l.src} src={l.src} alt={l.alt} className="h-10 w-auto sm:h-[52px]" />
-          ))}
-        </div>
-      </div>
     </section>
+  )
+}
+
+/* Illustration: CRI emblem in the centre, the recognition & support logos circling it. */
+const ORBIT_NAMES = {
+  'rec-msme.jpg': 'Ministry of MSME',
+  'rec-nidhi-prayas.jpg': 'DST NIDHI PRAYAS',
+  'rec-startinup.jpg': 'Start in UP',
+  'rec-iic.jpg': 'IIC',
+  'rec-aicte.jpg': 'AICTE',
+  'rec-startupindia.jpg': 'Startup India',
+  'rec-nirf.jpg': 'NIRF Innovation',
+  'rec-moe.jpg': 'Ministry of Education',
+}
+const orbitLogos = recognitionLogos.map((l) => {
+  const file = l.src.split('/').pop()
+  return { ...l, file, short: ORBIT_NAMES[file] || l.alt, orbitSrc: IMG + 'orbit/' + file }
+})
+
+function RecognitionOrbit() {
+  const R = 41 // radius, as % of the box
+  return (
+    <div className="relative aspect-square w-full max-w-[420px] shrink-0">
+      <div aria-hidden="true" className="absolute inset-[8%] rounded-full border-2 border-dashed border-gold-400/60" />
+      <div aria-hidden="true" className="absolute inset-[26%] rounded-full bg-[radial-gradient(circle,#fad157_0_45%,rgba(250,209,87,0)_70%)] opacity-60" />
+      <div className="absolute inset-[30%] grid place-items-center rounded-full bg-white shadow-lift ring-8 ring-gold-300/40">
+        <img src={IMG + 'orbit/cri-emblem.png'} alt="GLBCRI emblem" className="h-[78%] w-[78%] object-contain" />
+      </div>
+      <ul className="absolute inset-0 motion-safe:animate-[spin_70s_linear_infinite]">
+        {orbitLogos.map((l, k) => {
+          const a = (k / orbitLogos.length) * 2 * Math.PI - Math.PI / 2
+          return (
+            <li key={l.file} className="absolute h-[16%] w-[25%] -translate-x-1/2 -translate-y-1/2" style={{ left: `${50 + R * Math.cos(a)}%`, top: `${50 + R * Math.sin(a)}%` }}>
+              <div className="grid h-full w-full place-items-center rounded-[18px] bg-white px-[10%] py-[8%] shadow-card ring-1 ring-gold-200 motion-safe:animate-[spin_70s_linear_infinite_reverse]">
+                <img src={l.orbitSrc} alt={l.alt} title={l.alt} className="max-h-full max-w-full object-contain" loading="lazy" />
+              </div>
+            </li>
+          )
+        })}
+      </ul>
+    </div>
   )
 }
 
@@ -169,19 +267,23 @@ function About() {
           ))}
         </dl>
 
-        <div className="flex flex-col items-start gap-8 rounded-[28px] bg-[#fdf3d8] p-7 sm:p-10 lg:flex-row lg:items-center">
-          <Photo src={IMG + 'rec-nidhi-prayas.jpg'} alt="DST NIDHI PRAYAS" className="w-[200px] rounded-2xl mix-blend-multiply" />
-          <div className="flex flex-1 flex-col gap-2.5">
-            <span className="text-xs font-bold uppercase tracking-[0.1em] text-gold-700">DST NIDHI PRAYAS Centre</span>
-            <h3 className="text-[32px] font-extrabold leading-tight">Prototype funding up to ₹10 lakh</h3>
-            <p className="text-[15px] leading-relaxed text-ink-soft">For young innovators turning a science or technology idea into a physical prototype with commercial potential.</p>
-            <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm font-semibold">
-              <span>✓ Funding up to ₹10 lakh</span><span>✓ Access to our labs</span><span>✓ Industry &amp; academic mentors</span>
+        <div className="flex flex-col items-center gap-10 overflow-hidden rounded-[28px] bg-[#fdf3d8] p-7 sm:p-10 lg:flex-row lg:gap-14">
+          <RecognitionOrbit />
+          <div className="flex flex-1 flex-col gap-3">
+            <span className="text-xs font-bold uppercase tracking-[0.1em] text-gold-700">Recognised &amp; supported by</span>
+            <h3 className="text-[32px] font-extrabold leading-tight">Backed by the programs that fund Indian startups</h3>
+            <p className="text-[15px] leading-relaxed text-ink-soft">
+              GLBCRI works with the Ministry of MSME, DST NIDHI PRAYAS, Startup India and Start in UP, so our incubatees can apply to these schemes with our team guiding them through it.
+            </p>
+            <ul className="mt-1 flex flex-wrap gap-2">
+              {orbitLogos.map((l) => (
+                <li key={l.file} className="rounded-full bg-white/80 px-3 py-1.5 text-[13px] font-semibold text-gold-900">{l.short}</li>
+              ))}
+            </ul>
+            <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-2">
+              <Link to="/funding" className="btn bg-gold-800 font-bold text-white hover:bg-gold-900">See funding routes <Icon name="arrow" className="h-4 w-4" /></Link>
+              <Link to="/funding#prayas" className="text-sm font-semibold text-gold-700 hover:underline">NIDHI PRAYAS: prototype grants up to ₹10 L →</Link>
             </div>
-          </div>
-          <div className="flex min-w-[220px] flex-col gap-2">
-            <Link to="/funding#prayas" className="btn bg-gold-800 font-bold text-white hover:bg-gold-900">Check eligibility</Link>
-            <a href="https://glbcri.org/Prayasee-2023-24.php" target="_blank" rel="noreferrer" className="py-2 text-center text-sm font-semibold text-gold-700 hover:underline">See past Prayasees →</a>
           </div>
         </div>
       </div>
@@ -432,7 +534,7 @@ function News() {
 }
 
 /* 6 · TEAM + LABS + MENTORS ------------------------------------------------------------ */
-const TILT = ['-rotate-3', 'rotate-2 sm:mt-6', '-rotate-[1.5deg]', 'rotate-3 sm:mt-6']
+const TILT = ['-rotate-3', 'rotate-2 sm:mt-6', '-rotate-[1.5deg]', 'rotate-3 sm:mt-6', '-rotate-2']
 
 function Team() {
   const pm = team.find((m) => m.role === 'Program Manager') || team[0]
@@ -452,15 +554,26 @@ function Team() {
           <p className="max-w-[560px] text-[17px] leading-relaxed text-ink-soft">A small team that reads every application and answers every founder personally.</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-6 px-2 sm:gap-7 lg:grid-cols-4 lg:px-6">
+        <div className="grid grid-cols-2 gap-x-5 gap-y-8 px-1 sm:grid-cols-3 sm:gap-x-7 lg:grid-cols-5 lg:px-2">
           {team.map((m, i) => (
-            <figure key={m.name} className={`rounded-md bg-white p-3 pb-[18px] shadow-[0_2px_4px_rgba(81,53,41,.08),0_24px_40px_-24px_rgba(81,53,41,.4)] ${TILT[i % 4]}`}>
-              <Photo src={m.photo} alt={m.name} className="aspect-[4/5] w-full rounded-[3px] object-cover object-top" fallback={<div className="grid aspect-[4/5] place-items-center bg-gold-100"><Initials name={m.name} /></div>} />
-              <figcaption className="flex flex-col gap-0.5 pt-3.5">
-                <strong className="text-base">{m.name.replace(/^(Dr\.|Mr\.|Ms\.)\s*/, (t) => (t.startsWith('Dr') ? t : ''))}</strong>
-                <span className="text-[13px] text-ink-soft">{m.role}</span>
-              </figcaption>
-            </figure>
+            <div key={m.name} className={`flex flex-col gap-3 ${i === team.length - 1 && team.length % 2 ? 'col-span-2 mx-auto w-1/2 sm:col-span-1 sm:mx-0 sm:w-auto' : ''}`}>
+              <figure className={`rounded-md bg-white p-3 pb-[18px] shadow-[0_2px_4px_rgba(81,53,41,.08),0_24px_40px_-24px_rgba(81,53,41,.4)] ${TILT[i % TILT.length]}`}>
+                <Photo src={m.photo} alt={m.name} className="aspect-[4/5] w-full rounded-[3px] object-cover object-top" fallback={<div className="grid aspect-[4/5] place-items-center bg-gold-100"><Initials name={m.name} /></div>} />
+                <figcaption className="flex flex-col gap-0.5 pt-3.5">
+                  <strong className="text-[15px] leading-snug">{m.name.replace(/^(Dr\.|Mr\.|Ms\.)\s*/, (t) => (t.startsWith('Dr') ? t : ''))}</strong>
+                  <span className="text-[13px] text-ink-soft">{m.role}</span>
+                </figcaption>
+              </figure>
+              {m.handles && (
+                <Link to={`/contact?topic=${encodeURIComponent(m.topic)}`} className="group flex min-h-[44px] items-center justify-between gap-2 rounded-full bg-gold-800 py-2 pl-4 pr-2 text-left text-white transition hover:bg-gold-900">
+                  <span className="flex min-w-0 flex-col leading-tight">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-gold-300">Ask about</span>
+                    <span className="text-[12px] font-bold leading-tight sm:text-[13px]">{m.handles}</span>
+                  </span>
+                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-gold-300 text-gold-900 transition group-hover:translate-x-0.5"><Icon name="arrow" className="h-3.5 w-3.5" /></span>
+                </Link>
+              )}
+            </div>
           ))}
         </div>
 
