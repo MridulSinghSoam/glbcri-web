@@ -9,6 +9,7 @@ export const events = [
   {
     slug: 'bharat-udyam-sangam-2026',
     image: '/images/glbcri/event-bus-2026.jpg',
+    heroFit: 'contain', // poster: show the whole image in the hero slideshow
     title: 'Bharat Udyam Sangam 2026',
     type: 'Summit',
     date: '2026-10-31',
@@ -28,6 +29,7 @@ export const events = [
   {
     slug: 'aktu-leader-incubator-award-2026',
     image: '/images/glbcri/hero-aktu-award.jpg',
+    heroPos: '52% center',
     title: 'AKTU Leader Incubator Award 2026',
     type: 'Recognition',
     date: '2026-09-10',
@@ -52,6 +54,7 @@ export const events = [
   {
     slug: 'international-trade-fair-2025',
     image: '/images/glbcri/event-iitf.jpg',
+    heroFit: 'contain',
     title: 'International Trade Fair 2025',
     type: 'Showcase',
     date: '2025-12-12',
@@ -61,6 +64,7 @@ export const events = [
   {
     slug: 'smart-india-hackathon-2025',
     image: '/images/glbcri/hero-hackathon.jpg',
+    heroPos: '28% center',
     title: 'Smart India Hackathon 2025 Grand Finale',
     type: 'Competition',
     date: '2025-12-12', // CONFIRM: date read off the winner's cheque
@@ -70,6 +74,7 @@ export const events = [
   {
     slug: 'iic-regional-meet-2025',
     image: '/images/glbcri/event-iic-meet.jpg',
+    heroFit: 'contain',
     title: 'IIC Regional Meet 2025',
     type: 'Summit',
     date: '2025-11-25',

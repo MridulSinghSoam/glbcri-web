@@ -6,13 +6,13 @@ import { site } from '../data/site'
 import { submitContact } from '../lib/api'
 import { useSeo } from '../lib/useSeo'
 
-const interests = ['Incubation', 'Funding', 'Mentorship', 'Events', 'Partnership', 'Media', 'Other']
+const interests = ['Incubation', 'DST NIDHI PRAYAS', 'Startup India', 'MSME', 'Funding', 'Mentorship', 'Events', 'Partnership', 'Media', 'General enquiry', 'Other']
 
 export default function Contact() {
   useSeo('Contact', 'Contact GLBCRI, GL Bajaj Centre for Research and Incubation, Knowledge Park III, Greater Noida.')
   const [params] = useSearchParams()
   const [state, setState] = useState('idle') // idle | sending | sent | error
-  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', company: '', interest: params.get('topic') ? 'Incubation' : '', message: '' })
+  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', company: '', interest: interests.includes(params.get('topic')) ? params.get('topic') : params.get('topic') ? 'Incubation' : '', message: '' })
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
 
   const submit = async (e) => {

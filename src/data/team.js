@@ -1,10 +1,13 @@
 // Team as listed on glbcri.org/OurTeam.php (read 31 Oct 2026).
 // Add photo (/public/images/team/<file>), email and LinkedIn for each person.
+// `handles` = what founders should contact this person about (shown as the button under their photo on Home).
 export const team = [
-  { name: 'Dr. P.S. Pandey', role: 'General Manager', email: 'glbcri@glbitm.ac.in', photo: '/images/glbcri/team-pandey.jpg', linkedin: '' },
-  { name: 'Mr. Abhishek Pratap Gautam', role: 'Program Manager', email: '', photo: '/images/glbcri/team-abhishek.jpg', linkedin: '' },
-  { name: 'Mr. Akash Deep', role: 'Member & IIC Convenor', email: '', photo: '/images/glbcri/team-akash.jpg', linkedin: '' },
-  { name: 'Mr. Love Kumar Sharma', role: 'Professional Assistant', email: '', photo: '/images/glbcri/team-love.jpg', linkedin: '' },
+  { name: 'Dr. P.S. Pandey', role: 'General Manager', handles: 'DST NIDHI PRAYAS', topic: 'DST NIDHI PRAYAS', email: 'glbcri@glbitm.ac.in', photo: '/images/glbcri/team-pandey.jpg', linkedin: '' },
+  { name: 'Mr. Abhishek Pratap Gautam', role: 'Program Manager', handles: 'Startup India', topic: 'Startup India', email: '', photo: '/images/glbcri/team-abhishek.jpg', linkedin: '' },
+  { name: 'Mr. Akash Deep', role: 'Member & IIC Convenor', handles: 'MSME', topic: 'MSME', email: '', photo: '/images/glbcri/team-akash.jpg', linkedin: '' },
+  { name: 'Mr. Love Kumar Sharma', role: 'Professional Assistant', handles: 'General enquiries', topic: 'General enquiry', email: '', photo: '/images/glbcri/team-love.jpg', linkedin: '' },
+  // CONFIRM: full name, title and photo (save as public/images/glbcri/team-ashutosh.jpg; an initial shows until then)
+  { name: 'Mr. Ashutosh', role: 'Events Coordinator', handles: 'Events', topic: 'Events', email: '', photo: '/images/glbcri/team-ashutosh.jpg', linkedin: '' },
 ]
 
 export const contactPerson = team[0]

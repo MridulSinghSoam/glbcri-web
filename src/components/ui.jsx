@@ -75,6 +75,6 @@ export function ApplyButton({ program, children = 'Apply for Incubation', classN
 
 export function Initials({ name, className = 'h-14 w-14 text-base' }) {
   const parts = name.replace(/^(Dr\.|Mr\.|Ms\.|Mrs\.)\s*/, '').split(' ')
-  const ini = (parts[0]?.[0] || '') + (parts[parts.length - 1]?.[0] || '')
+  const ini = (parts[0]?.[0] || '') + (parts.length > 1 ? parts[parts.length - 1][0] : '')
   return <span className={`grid shrink-0 place-items-center rounded-full bg-gradient-to-br from-gold-300 to-gold-600 font-bold text-white ${className}`}>{ini}</span>
 }
