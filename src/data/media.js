@@ -438,6 +438,13 @@ export const pressGroups = [
     ],
   },
 ]
-export const pressCount = pressGroups.reduce((n, g) => n + g.items.length, 0)
+export let pressCount = pressGroups.reduce((n, g) => n + g.items.length, 0)
 export const pressSource = OLD + 'Media.php'
 export const latestPress = pressGroups.slice(0, 4).map((g) => ({ ...g.items[0], group: g }))
+
+// Used by lib/cms.js when the admin panel has press clippings: swaps them in and recomputes the totals.
+export function setPress(groups) {
+  pressGroups.splice(0, pressGroups.length, ...groups)
+  pressCount = pressGroups.reduce((n, g) => n + g.items.length, 0)
+  latestPress.splice(0, latestPress.length, ...pressGroups.slice(0, 4).map((g) => ({ ...g.items[0], group: g })))
+}

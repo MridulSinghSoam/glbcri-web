@@ -5,6 +5,8 @@ import { Logo, Photo } from './ui'
 import { site } from '../data/site'
 import { getNextEvent, formatDate, isToday } from '../lib/events'
 import { subscribe } from '../lib/api'
+import { news } from '../lib/cms'
+import { usePageTracking } from '../lib/track'
 
 const nav = [
   { to: '/programs', label: 'Programs' },
@@ -16,7 +18,12 @@ const nav = [
 ]
 
 function AnnouncementBar() {
-  const next = getNextEvent()
+  // A news post pinned in the admin panel wins; otherwise the next upcoming event.
+  const pinned = news.find((n) => n.showInBar)
+  const event = getNextEvent()
+  const next = pinned
+    ? { slug: `news-${pinned.id}`, title: pinned.title, link: pinned.link, label: 'News', note: pinned.summary }
+    : event && { slug: event.slug, title: event.title, link: `/events/${event.slug}`, label: isToday(event) ? 'Today' : 'Upcoming', note: `${formatDate(event.date, { year: false })}${event.prize ? ` · ${event.prize}` : ''}` }
   const key = next ? `glbcri:dismiss:${next.slug}` : ''
   const [hidden, setHidden] = useState(() => {
     try {
@@ -37,14 +44,16 @@ function AnnouncementBar() {
   return (
     <div className="relative bg-ink text-white">
       <div className="container-x flex items-center justify-center gap-3 py-2.5 pr-10 text-center text-[13px]">
-        <span className="hidden rounded-full bg-gold-500 px-2 py-0.5 text-[11px] font-semibold text-ink sm:inline">{isToday(next) ? 'Today' : 'Upcoming'}</span>
+        <span className="hidden rounded-full bg-gold-500 px-2 py-0.5 text-[11px] font-semibold text-ink sm:inline">{next.label}</span>
         <span className="truncate">
           <strong className="font-semibold">{next.title}</strong>
-          <span className="text-white/70"> · {formatDate(next.date, { year: false })}{next.prize ? ` · ${next.prize}` : ''}</span>
+          {next.note && <span className="hidden text-white/70 sm:inline"> · {next.note}</span>}
         </span>
-        <Link to={`/events/${next.slug}`} className="shrink-0 font-semibold text-gold-300 underline-offset-4 hover:underline">
-          Details →
-        </Link>
+        {next.link && (/^https?:/.test(next.link) ? (
+          <a href={next.link} target="_blank" rel="noreferrer" className="shrink-0 font-semibold text-gold-300 underline-offset-4 hover:underline">Details →</a>
+        ) : (
+          <Link to={next.link} className="shrink-0 font-semibold text-gold-300 underline-offset-4 hover:underline">Details →</Link>
+        ))}
       </div>
       <button onClick={close} aria-label="Dismiss announcement" className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1 text-white/60 hover:text-white">
         <Icon name="close" className="h-4 w-4" />
@@ -276,6 +285,14 @@ function ScrollToTop() {
 
 export default function Layout() {
   const { pathname } = useLocation()
+  usePageTracking()
+  // When newer content arrives from the admin panel after the page is up, draw it again.
+  const [version, setVersion] = useState(0)
+  useEffect(() => {
+    const onUpdate = () => setVersion((v) => v + 1)
+    window.addEventListener('cms:update', onUpdate)
+    return () => window.removeEventListener('cms:update', onUpdate)
+  }, [])
   return (
     <div className="flex min-h-screen flex-col pb-[72px] sm:pb-0">
       <ScrollToTop />
@@ -285,7 +302,7 @@ export default function Layout() {
       <AnnouncementBar />
       <Navbar />
       <main id="main" className="flex-1">
-        <Outlet />
+        <Outlet key={version} />
       </main>
       {!pathname.startsWith('/apply') && <PreFooterCTA />}
       <Footer />

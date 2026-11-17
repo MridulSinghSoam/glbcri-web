@@ -59,85 +59,6 @@ function StagePicker() {
   )
 }
 
-/* Hero slideshow: upcoming events first (soonest first), then the most recent past ones.
-   The next slide sits tilted behind the current one, so visitors see what's coming up. */
-const SLIDE_MS = 5000
-
-function heroSlides() {
-  const hasImg = (e) => e.image
-  return [...getUpcoming().filter(hasImg), ...getPast().filter(hasImg)].slice(0, 6)
-}
-
-function SlideImage({ e, eager = false }) {
-  if (e.heroFit === 'contain') {
-    return (
-      <div className="relative h-full w-full overflow-hidden bg-gold-900">
-        <Photo src={e.image} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-2xl" />
-        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-gold-800/50 via-gold-900/20 to-gold-950/60" />
-        <Photo src={e.image} alt={e.title} className="relative h-full w-full object-contain p-5 pb-24" loading={eager ? 'eager' : 'lazy'} />
-      </div>
-    )
-  }
-  return <Photo src={e.image} alt={e.title} className="h-full w-full object-cover" style={{ objectPosition: e.heroPos || 'center' }} loading={eager ? 'eager' : 'lazy'} />
-}
-
-function HeroSlideshow() {
-  const slides = heroSlides()
-  const n = slides.length
-  const [i, setI] = useState(0)
-  const [paused, setPaused] = useState(false)
-
-  useEffect(() => {
-    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-    if (paused || reduce || n < 2) return
-    const t = setTimeout(() => setI((x) => (x + 1) % n), SLIDE_MS)
-    return () => clearTimeout(t)
-  }, [i, paused, n])
-
-  if (!n) return null
-  const cur = slides[i]
-  const next = slides[(i + 1) % n]
-  const upcoming = getUpcoming().includes(cur)
-  const label = isToday(cur) ? 'Happening today' : upcoming ? 'Up next' : 'Latest'
-
-  return (
-    <div className="absolute inset-0" aria-roledescription="carousel" aria-label="GLBCRI events" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} onFocus={() => setPaused(true)} onBlur={() => setPaused(false)}>
-      {/* next slide, tilted behind */}
-      <div aria-hidden="true" className="absolute -right-3 bottom-14 top-10 hidden w-4/5 rotate-3 overflow-hidden rounded-[28px] shadow-lift sm:block">
-        <SlideImage key={next.slug} e={next} />
-      </div>
-
-      {/* current slide (cross-fades) */}
-      <div className="absolute bottom-8 left-0 right-0 top-4 overflow-hidden rounded-[28px] bg-gold-200 shadow-[0_30px_60px_-30px_rgba(81,53,41,.55)] sm:right-6">
-        {slides.map((e, k) => (
-          <div key={e.slug} aria-hidden={k !== i} className={`absolute inset-0 transition-opacity duration-700 ${k === i ? 'opacity-100' : 'opacity-0'}`}>
-            <SlideImage e={e} eager={k === 0} />
-          </div>
-        ))}
-        {n > 1 && (
-          <div className="absolute bottom-16 right-4 flex items-center gap-1.5 rounded-full bg-black/40 px-2.5 py-2 backdrop-blur sm:bottom-auto sm:left-4 sm:right-auto sm:top-4">
-            {slides.map((e, k) => (
-              <button key={e.slug} type="button" onClick={() => setI(k)} aria-label={`Show ${e.title}`} aria-current={k === i} className={`h-2 rounded-full transition-all ${k === i ? 'w-6 bg-gold-300' : 'w-2 bg-white/70 hover:bg-white'}`} />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* front card: the event on screen right now */}
-      <Link to={`/events/${cur.slug}`} className="absolute bottom-0 left-3 flex max-w-[360px] items-center gap-3.5 rounded-[18px] bg-white px-4 py-3.5 shadow-lift sm:left-6">
-        <span className={`grid h-[52px] w-[52px] shrink-0 place-items-center rounded-[14px] ${upcoming ? 'bg-gold-300 text-gold-900' : 'bg-gold-800 text-gold-300'}`}>
-          <Icon name={cur.type === 'Recognition' ? 'trophy' : 'calendar'} className="h-[26px] w-[26px]" strokeWidth={1.9} />
-        </span>
-        <span className="flex min-w-0 flex-col">
-          <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-gold-600">{label} · {formatDate(cur.date)}</span>
-          <strong className="text-[15px]">{cur.title}</strong>
-          <span className="truncate text-xs text-ink-soft">{cur.venue}</span>
-        </span>
-      </Link>
-    </div>
-  )
-}
-
 function Hero() {
   return (
     <section className="container-x">
@@ -164,18 +85,180 @@ function Hero() {
         </div>
 
         <div className="relative min-h-[460px] flex-1 sm:min-h-[600px]">
-          <HeroSlideshow />
-          <div className="absolute right-0 top-0 z-10 flex items-center gap-3 rounded-[18px] bg-white px-4 py-3.5 shadow-lift">
+          <div aria-hidden="true" className="absolute -right-3 bottom-14 top-10 hidden w-4/5 rotate-3 overflow-hidden rounded-[28px] shadow-lift sm:block">
+            <Photo src={IMG + 'hero-hackathon.jpg'} alt="" className="h-full w-full object-cover object-[28%_center]" />
+          </div>
+          <div className="absolute bottom-8 left-0 right-0 top-4 overflow-hidden rounded-[28px] bg-gold-200 shadow-[0_30px_60px_-30px_rgba(81,53,41,.55)] sm:right-6">
+            <Photo src={IMG + 'hero-aktu-award.jpg'} alt="The GLBCRI team receiving the AKTU Leader Incubator Award 2026 at UP Startup Samvad, Lucknow" className="h-full w-full object-cover object-[52%_center]" loading="eager" />
+          </div>
+          <div className="absolute right-0 top-0 flex items-center gap-3 rounded-[18px] bg-white px-4 py-3.5 shadow-lift">
             <span className="grid h-11 w-11 place-items-center rounded-xl bg-gold-300 text-gold-800"><Icon name="rupee" className="h-[22px] w-[22px]" strokeWidth={2} /></span>
             <span className="flex flex-col">
               <strong className="font-display text-[22px] font-extrabold">Up to ₹10 L</strong>
               <span className="text-xs text-ink-soft">Prototype grant · DST NIDHI PRAYAS</span>
             </span>
           </div>
+          <Link to="/events/aktu-leader-incubator-award-2026" className="absolute bottom-0 left-3 flex max-w-[360px] items-center gap-3.5 rounded-[18px] bg-white px-4 py-3.5 shadow-lift sm:left-6">
+            <span className="grid h-[52px] w-[52px] shrink-0 place-items-center rounded-[14px] bg-gold-800 text-gold-300"><Icon name="trophy" className="h-[26px] w-[26px]" strokeWidth={1.9} /></span>
+            <span className="flex flex-col">
+              <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-gold-600">Winner · 10 Sep 2026</span>
+              <strong className="text-[15px]">AKTU Leader Incubator Award 2026</strong>
+              <span className="text-xs text-ink-soft">UP Startup Samvad, Lucknow</span>
+            </span>
+          </Link>
           <div className="absolute bottom-[76px] right-10 hidden flex-col rounded-2xl bg-gold-800 px-[18px] py-3.5 text-white shadow-lift sm:flex">
             <strong className="font-display text-[30px] font-extrabold leading-none text-gold-300">{portfolio.length}</strong>
             <span className="text-xs text-[#f1e3d6]">startups incubated</span>
           </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* 2 · LATEST AT GLBCRI: an event showcase in the style of the Startup India home page.
+   Big banner on the left, thumbnails on the right, arrows + counter, and a stats bar under it.
+   Slides: upcoming events first (soonest first), then the most recent past ones. */
+const SLIDE_MS = 5000
+
+function showcaseSlides() {
+  const hasImg = (e) => e.image
+  return [...getUpcoming().filter(hasImg), ...getPast().filter(hasImg)].slice(0, 6)
+}
+
+function SlideImage({ e, eager = false, thumb = false }) {
+  if (e.heroFit === 'contain') {
+    return (
+      <div className="relative h-full w-full overflow-hidden bg-gold-900">
+        <Photo src={e.image} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-2xl" />
+        <Photo src={e.image} alt={thumb ? '' : e.title} className={`relative h-full w-full object-contain ${thumb ? 'p-1' : 'p-3 sm:p-6 sm:pb-24'}`} loading={eager ? 'eager' : 'lazy'} />
+      </div>
+    )
+  }
+  return <Photo src={e.image} alt={thumb ? '' : e.title} className="h-full w-full object-cover" style={{ objectPosition: e.heroPos || 'center' }} loading={eager ? 'eager' : 'lazy'} />
+}
+
+function EventShowcase() {
+  const slides = showcaseSlides()
+  const n = slides.length
+  const [i, setI] = useState(0)
+  const [paused, setPaused] = useState(false)
+
+  useEffect(() => {
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    if (paused || reduce || n < 2) return
+    const t = setTimeout(() => setI((x) => (x + 1) % n), SLIDE_MS)
+    return () => clearTimeout(t)
+  }, [i, paused, n])
+
+  if (!n) return null
+  const cur = slides[i]
+  const upcoming = getUpcoming().includes(cur)
+  const label = isToday(cur) ? 'Happening today' : upcoming ? 'Up next' : 'Latest'
+  const go = (d) => setI((x) => (x + d + n) % n)
+  // the thumbnail column shows 4 at a time and follows the active slide
+  const start = Math.min(Math.max(0, i - 1), Math.max(0, n - 4))
+  const thumbs = slides.slice(start, start + 4)
+  const numbers = [
+    { icon: 'rocket', value: portfolio.length, label: 'Startups incubated' },
+    { icon: 'rupee', value: stats[1].value, label: 'Raised by our startups' },
+    { icon: 'shield', value: stats[4].value, label: 'Patents published' },
+  ]
+
+  return (
+    <section className="relative overflow-hidden bg-[#fbeee0] py-12 sm:py-16" aria-labelledby="latest-h">
+      <div aria-hidden="true" className="pointer-events-none absolute -left-24 top-10 h-72 w-72 rounded-full bg-gold-300/30 blur-3xl" />
+      <div aria-hidden="true" className="pointer-events-none absolute -right-20 bottom-0 h-80 w-80 rounded-full bg-gold-500/20 blur-3xl" />
+
+      <div className="container-x relative">
+        <div className="mb-6 flex items-end justify-between gap-4">
+          <div>
+            <span className="text-xs font-bold uppercase tracking-[0.14em] text-gold-600">What’s happening</span>
+            <h2 id="latest-h" className="mt-1 text-[28px] font-extrabold leading-tight sm:text-[34px]">Latest at GLBCRI</h2>
+          </div>
+          <Link to="/events" className="hidden shrink-0 text-sm font-semibold text-gold-700 hover:underline sm:inline">All events →</Link>
+        </div>
+
+        <div
+          className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,1fr)_220px] lg:gap-5"
+          aria-roledescription="carousel"
+          aria-label="GLBCRI events"
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+          onFocus={() => setPaused(true)}
+          onBlur={() => setPaused(false)}
+        >
+          {/* main banner */}
+          <div className="relative overflow-hidden rounded-[22px] bg-gold-900 shadow-[0_24px_50px_-28px_rgba(81,53,41,.6)]">
+            <div className="relative aspect-[16/10] sm:aspect-[16/8]">
+            {slides.map((e, k) => (
+              <div key={e.slug} aria-hidden={k !== i} className={`absolute inset-0 transition-opacity duration-700 ${k === i ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>
+                <SlideImage e={e} eager={k === 0} />
+              </div>
+            ))}
+            <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-2/3 bg-gradient-to-t from-black/75 via-black/30 to-transparent sm:block" />
+            </div>
+            {/* caption: under the picture on phones, over it on bigger screens */}
+            <div className="flex flex-col gap-3 p-5 text-white sm:absolute sm:inset-x-0 sm:bottom-0 sm:flex-row sm:items-end sm:justify-between sm:p-7" aria-live={paused ? 'polite' : 'off'}>
+              <div className="min-w-0">
+                <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.08em] ${upcoming ? 'bg-gold-300 text-gold-950' : 'bg-white/20 text-white backdrop-blur'}`}>
+                  {isToday(cur) && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" />}
+                  {label} · {formatDate(cur.date)}
+                </span>
+                <h3 className="mt-2 text-2xl font-extrabold leading-tight sm:text-[32px]">{cur.title}</h3>
+                {cur.venue && <p className="mt-1 truncate text-sm text-white/80">{cur.venue}</p>}
+              </div>
+              <Link to={`/events/${cur.slug}`} className="inline-flex w-fit shrink-0 items-center gap-2 rounded-full bg-gold-300 px-5 py-2.5 text-sm font-bold text-gold-950 shadow-lift transition hover:bg-gold-400">
+                Know more <Icon name="arrow" className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+
+          {/* thumbnails + controls */}
+          {n > 1 && (
+            <div className="flex min-w-0 flex-col gap-3">
+              <ul className="flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none] lg:flex-1 lg:flex-col lg:overflow-visible lg:pb-0">
+                {slides.map((e, k) => {
+                  const on = k === i
+                  // phones: a scrolling row of all slides; desktop: a column of 4 that follows the active one
+                  const inColumn = thumbs.includes(e)
+                  return (
+                    <li key={e.slug} className={`w-[150px] shrink-0 lg:w-auto lg:flex-1 ${inColumn ? '' : 'lg:hidden'}`}>
+                      <button
+                        type="button"
+                        onClick={() => setI(k)}
+                        aria-label={`Show ${e.title}`}
+                        aria-current={on}
+                        className={`relative block aspect-[16/10] h-full w-full overflow-hidden rounded-2xl border-[3px] transition lg:aspect-auto lg:min-h-[86px] ${on ? 'border-gold-500 shadow-lift' : 'border-white opacity-70 hover:opacity-100'}`}
+                      >
+                        <SlideImage e={e} thumb />
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
+              <div className="flex items-center justify-center gap-4">
+                <button type="button" onClick={() => go(-1)} aria-label="Previous event" className="grid h-10 w-10 place-items-center rounded-full border-2 border-gold-600 text-gold-700 transition hover:bg-gold-600 hover:text-white">
+                  <Icon name="chevLeft" className="h-4 w-4" strokeWidth={2.4} />
+                </button>
+                <span className="min-w-[44px] text-center text-sm font-semibold tabular-nums text-ink-soft">{i + 1} / {n}</span>
+                <button type="button" onClick={() => go(1)} aria-label="Next event" className="grid h-10 w-10 place-items-center rounded-full border-2 border-gold-600 text-gold-700 transition hover:bg-gold-600 hover:text-white">
+                  <Icon name="chevRight" className="h-4 w-4" strokeWidth={2.4} />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* stats bar */}
+        <div className="mt-5 grid gap-3 sm:grid-cols-3 lg:mr-[240px]">
+          {numbers.map((s) => (
+            <div key={s.label} className="flex items-center gap-4 rounded-[20px] bg-white/85 px-5 py-4 shadow-card">
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full border-2 border-gold-300 bg-gold-50 text-gold-700"><Icon name={s.icon} className="h-5 w-5" /></span>
+              <strong className="whitespace-nowrap font-display text-[24px] font-extrabold leading-none tracking-tightest xl:text-[28px]">{s.value}</strong>
+              <span className="border-l-2 border-ink/80 pl-3 text-sm font-semibold leading-tight text-ink-soft">{s.label}</span>
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -646,6 +729,7 @@ export default function Home() {
   return (
     <>
       <Hero />
+      <EventShowcase />
       <About />
       <AlreadyBuilding />
       <Startups />

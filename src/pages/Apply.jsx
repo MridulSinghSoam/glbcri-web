@@ -6,6 +6,7 @@ import { programs, applySteps } from '../data/programs'
 import { site } from '../data/site'
 import { contactPerson } from '../data/team'
 import { isDemoMode, submitApplication } from '../lib/api'
+import { track } from '../lib/track'
 import { useSeo } from '../lib/useSeo'
 
 const DRAFT_KEY = 'glbcri:apply-draft'
@@ -56,7 +57,7 @@ function ApplyIncubexa() {
           <h1 className="mt-4 text-4xl font-extrabold leading-tight sm:text-5xl">Tell us what you’re building</h1>
           <p className="mt-4 max-w-xl text-lg text-ink-soft">Applications go through GLBCRI’s startup intake form. No account needed, and your progress saves automatically as you type.</p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            <a href={site.incubexaUrl} target="_blank" rel="noreferrer" className="btn-primary px-8 py-4 text-base">
+            <a href={site.incubexaUrl} target="_blank" rel="noreferrer" onClick={() => track('apply_click')} className="btn-primary px-8 py-4 text-base">
               Start your application <Icon name="arrow" className="h-4 w-4" />
             </a>
             <a href={site.bookingUrl} className="btn-outline">Questions? Talk to us first</a>
@@ -182,7 +183,7 @@ function ApplyNative() {
           <h1 className="mt-6 text-3xl font-extrabold">Application received, {data.fullName.split(' ')[0]}!</h1>
           <p className="mt-3 text-ink-soft">We’ll reach out within {site.replyPromise}. Your reference ID is</p>
           <p className="mt-2 inline-block rounded-xl bg-ink px-4 py-2 font-mono text-lg font-bold text-gold-300">{result.ref}</p>
-          {isDemoMode && <p className="mt-4 text-xs text-amber-700">Demo mode: no form endpoint is set, so this was saved in this browser only.</p>}
+          {isDemoMode && <p className="mt-4 text-xs text-amber-700">Demo mode: no database or form endpoint is set, so this was saved in this browser only.</p>}
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link to="/events" className="btn-outline">See upcoming events</Link>
             {site.social.instagram.url && <a href={site.social.instagram.url} target="_blank" rel="noreferrer" className="btn-primary"><Icon name="instagram" className="h-4 w-4" />Follow us</a>}

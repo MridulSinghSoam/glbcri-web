@@ -6,7 +6,7 @@ export const team = [
   { name: 'Mr. Abhishek Pratap Gautam', role: 'Program Manager', handles: 'Startup India', topic: 'Startup India', email: '', photo: '/images/glbcri/team-abhishek.jpg', linkedin: '' },
   { name: 'Mr. Akash Deep', role: 'Member & IIC Convenor', handles: 'MSME', topic: 'MSME', email: '', photo: '/images/glbcri/team-akash.jpg', linkedin: '' },
   { name: 'Mr. Love Kumar Sharma', role: 'Professional Assistant', handles: 'General enquiries', topic: 'General enquiry', email: '', photo: '/images/glbcri/team-love.jpg', linkedin: '' },
-  // CONFIRM: full name, title and photo (save as public/images/glbcri/team-ashutosh.jpg; an initial shows until then)
+  // CONFIRM: full name and title (photo added 9 Nov 2026)
   { name: 'Mr. Ashutosh', role: 'Events Coordinator', handles: 'Events', topic: 'Events', email: '', photo: '/images/glbcri/team-ashutosh.jpg', linkedin: '' },
 ]
 
